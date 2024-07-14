@@ -1,0 +1,88 @@
+.myID {
+    font-family: Font;
+    text-align: center;
+    color: aliceblue;
+    font-size: 50px;
+}
+
+section {
+    margin-top: 50px;
+}
+
+.mySocials {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.social {
+    margin: 0 20px 0 20px;
+    width: 480px;
+    height: 300px;
+    border-radius: 15px;
+    background-color: aliceblue;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s
+}
+
+.social a {
+    display: block;
+    position: absolute;
+    height: 300px;
+    width: 480px;
+    border-radius: 15;
+    z-index: 1;
+}
+
+.social:hover {
+    transform: scale(102%);
+}
+
+.social img {
+    height: 150px;
+    width: 150px;
+}
+
+.social h2 {
+    font-size: 40px;
+    margin-left: 30px;
+    font-family: Font;
+}
+
+@font-face {
+    font-family: Font;
+    src: url(../font/font.ttf);
+}
+
+@media only screen and (max-width: 800px) {
+    .mySocials{
+        flex-direction: column;
+    }
+
+    .social {
+        margin: 10px 0 0 0;
+    }
+
+
+}
+
+@media only screen and (max-width: 500px) {
+    .social {
+        width: 95vmin;
+        height: 95vmin;
+    }
+    .social a {
+        width: 95vmin;
+        height: 95vmin;
+    }
+    .social img {
+        width: 50vmin;
+        height: 50vmin;
+    }
+    .social h2 {
+        font-size: 30px;
+        margin-left: 10px;
+    }
+}

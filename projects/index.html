@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects</title>
+    <link rel="stylesheet" href="../css/header.css">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <div class="logo">
+                <a href=".."></a>
+                <img src="../img/img.jpg" alt="Logo">
+            </div>
+            <nav>
+                <a href="..">Home</a>
+                <a href="/projects">Projects</a>
+                <a href="../socials">Socials</a>
+            </nav>
+        </div>
+    </header>
+    <h1 id="time" style="color: aliceblue;">Cargando Hora...</h1>
+    <script>
+        function actualizarReloj() {
+            const fecha = new Date();
+            const horas = fecha.getHours().toString().padStart(2, "0");
+            const minutos = fecha.getMinutes().toString().padStart(2, "0");
+            const segundos = fecha.getSeconds().toString().padStart(2, "0");
+            const horaActual = horas + ":" + minutos + ":" + segundos;
+
+            document.getElementById("time").innerHTML = "Hora actual: " + horaActual;
+        }
+
+    setInterval(actualizarReloj, 1000); // Actualizar cada segundo
+    </script>
+</body>
+</html>
