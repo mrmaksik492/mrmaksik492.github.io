@@ -3,96 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar datos personalizados a Webhook</title>
+    <title>Póker Realista con Robot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        form, #customFields {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #0a0a0a;
+            color: white;
         }
-        label, input, button {
-            margin-bottom: 10px;
+        #game-container {
+            text-align: center;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        #table {
+            width: 600px;
+            height: 300px;
+            background-color: #0d4d1e;
+            border-radius: 150px;
+            margin: 20px auto;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,255,0,0.2);
+        }
+        .player, .robot {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+        }
+        .player {
+            bottom: -60px;
+            left: 240px;
+        }
+        .robot {
+            top: -60px;
+            left: 240px;
+        }
+        .card {
+            width: 60px;
+            height: 90px;
+            background-color: white;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 0 5px;
+            color: black;
+            line-height: 90px;
+            font-size: 24px;
+            transition: transform 0.5s;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .card.dealt {
+            animation: dealCard 0.5s;
+        }
+        @keyframes dealCard {
+            from {
+                transform: translateY(-100px) rotate(720deg);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
         }
         button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
             background-color: #4CAF50;
             color: white;
-            padding: 10px;
             border: none;
-            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #45a049;
         }
-        #addField {
-            background-color: #008CBA;
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-        #addField:hover {
-            background-color: #007B9A;
+        #balance, #bet-amount {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        #bet-controls {
+            margin-top: 20px;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <h1>Enviar datos personalizados a Webhook</h1>
-    <form id="webhookForm">
-        <label for="webhookUrl">URL del Webhook:</label>
-        <input type="url" id="webhookUrl" name="webhookUrl" required>
-        
-        <div id="customFields"></div>
-        
-        <button type="button" id="addField">Agregar campo personalizado</button>
-        <button type="submit">Enviar datos</button>
-    </form>
+    <div id="game-container">
+        <h1>Póker Realista con Robot</h1>
+        <div id="balance">Saldo: $1000</div>
+        <div id="table">
+            <div class="robot" id="robot-hand"></div>
+            <div class="player" id="player-hand"></div>
+        </div>
+        <div id="bet-controls">
+            <input type="number" id="bet-input" min="1" max="1000" value="10">
+            <button id="place-bet">Apostar</button>
+        </div>
+        <div id="game-controls" style="display:none;">
+            <button id="hit">Pedir</button>
+            <button id="stand">Plantarse</button>
+        </div>
+        <div id="message"></div>
+    </div>
 
     <script>
-        const form = document.getElementById('webhookForm');
-        const customFields = document.getElementById('customFields');
-        const addFieldButton = document.getElementById('addField');
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [];
+        let playerHand = [];
+        let robotHand = [];
+        let playerBalance = 1000;
+        let currentBet = 0;
 
-        addFieldButton.addEventListener('click', () => {
-            const fieldDiv = document.createElement('div');
-            fieldDiv.innerHTML = `
-                <label for="key_${customFields.children.length}">Nombre del campo:</label>
-                <input type="text" id="key_${customFields.children.length}" required>
-                <label for="value_${customFields.children.length}">Valor del campo:</label>
-                <input type="text" id="value_${customFields.children.length}" required>
-            `;
-            customFields.appendChild(fieldDiv);
-        });
+        const playerHandEl = document.getElementById('player-hand');
+        const robotHandEl = document.getElementById('robot-hand');
+        const messageEl = document.getElementById('message');
+        const balanceEl = document.getElementById('balance');
+        const betInputEl = document.getElementById('bet-input');
+        const placeBetBtn = document.getElementById('place-bet');
+        const hitBtn = document.getElementById('hit');
+        const standBtn = document.getElementById('stand');
+        const betControlsEl = document.getElementById('bet-controls');
+        const gameControlsEl = document.getElementById('game-controls');
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const webhookUrl = document.getElementById('webhookUrl').value;
-            const data = {};
-
-            for (let i = 0; i < customFields.children.length; i++) {
-                const key = document.getElementById(`key_${i}`).value;
-                const value = document.getElementById(`value_${i}`).value;
-                data[key] = value;
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
             }
-            
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Datos enviados con éxito');
-                console.log('Respuesta:', data);
-            })
-            .catch((error) => {
-                alert('Error al enviar los datos');
-                console.error('Error:', error);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function dealCards() {
+            createDeck();
+            shuffle(deck);
+            playerHand = [deck.pop(), deck.pop()];
+            robotHand = [deck.pop(), deck.pop()];
+            updateHandsDisplay();
+        }
+
+        function updateHandsDisplay() {
+            playerHandEl.innerHTML = '';
+            robotHandEl.innerHTML = '';
+            playerHand.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card', 'dealt');
+                cardEl.textContent = `${card.value}${card.suit}`;
+                cardEl.style.color = ['♥', '♦'].includes(card.suit) ? 'red' : 'black';
+                playerHandEl.appendChild(cardEl);
             });
+            robotHand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card', 'dealt');
+                if (index === 0) {
+                    cardEl.textContent = '🂠';
+                    cardEl.style.backgroundColor = '#b71c1c';
+                } else {
+                    cardEl.textContent = `${card.value}${card.suit}`;
+                    cardEl.style.color = ['♥', '♦'].includes(card.suit) ? 'red' : 'black';
+                }
+                robotHandEl.appendChild(cardEl);
+            });
+        }
+
+        function hit() {
+            playerHand.push(deck.pop());
+            updateHandsDisplay();
+            if (calculateHandValue(playerHand) > 21) {
+                endGame('¡Te has pasado! El robot gana.');
+            }
+        }
+
+        function robotTurn() {
+            while (calculateHandValue(robotHand) < 17) {
+                robotHand.push(deck.pop());
+            }
+            updateHandsDisplay(true);
+            determineWinner();
+        }
+
+        function calculateHandValue(hand) {
+            let value = 0;
+            let aces = 0;
+            for (let card of hand) {
+                if (card.value === 'A') {
+                    aces++;
+                } else if (['K', 'Q', 'J'].includes(card.value)) {
+                    value += 10;
+                } else {
+                    value += parseInt(card.value);
+                }
+            }
+            for (let i = 0; i < aces; i++) {
+                if (value + 11 <= 21) {
+                    value += 11;
+                } else {
+                    value += 1;
+                }
+            }
+            return value;
+        }
+
+        function determineWinner() {
+            const playerValue = calculateHandValue(playerHand);
+            const robotValue = calculateHandValue(robotHand);
+            if (robotValue > 21) {
+                endGame('¡El robot se ha pasado! Has ganado.', true);
+            } else if (playerValue > robotValue) {
+                endGame('¡Has ganado!', true);
+            } else if (playerValue < robotValue) {
+                endGame('El robot gana.', false);
+            } else {
+                endGame('Empate.', null);
+            }
+        }
+
+        function endGame(message, playerWon) {
+            messageEl.textContent = message;
+            if (playerWon === true) {
+                playerBalance += currentBet * 2;
+            } else if (playerWon === false) {
+                // No need to deduct, already deducted when placing bet
+            } else {
+                playerBalance += currentBet; // Return the bet on a tie
+            }
+            updateBalance();
+            betControlsEl.style.display = 'block';
+            gameControlsEl.style.display = 'none';
+            currentBet = 0;
+        }
+
+        function updateBalance() {
+            balanceEl.textContent = `Saldo: $${playerBalance}`;
+            betInputEl.max = playerBalance;
+        }
+
+        placeBetBtn.addEventListener('click', () => {
+            const betAmount = parseInt(betInputEl.value);
+            if (betAmount > 0 && betAmount <= playerBalance) {
+                currentBet = betAmount;
+                playerBalance -= currentBet;
+                updateBalance();
+                dealCards();
+                betControlsEl.style.display = 'none';
+                gameControlsEl.style.display = 'block';
+                messageEl.textContent = `Apuesta actual: $${currentBet}`;
+            } else {
+                messageEl.textContent = 'Apuesta inválida.';
+            }
         });
+
+        hitBtn.addEventListener('click', hit);
+
+        standBtn.addEventListener('click', () => {
+            robotTurn();
+        });
+
+        // Inicializar
+        updateBalance();
     </script>
 </body>
 </html>
