@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar datos personalizados a Webhook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form, #customFields {
+            display: flex;
+            flex-direction: column;
+        }
+        label, input, button {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #addField {
+            background-color: #008CBA;
+        }
+        #addField:hover {
+            background-color: #007B9A;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enviar datos personalizados a Webhook</h1>
+    <form id="webhookForm">
+        <label for="webhookUrl">URL del Webhook:</label>
+        <input type="url" id="webhookUrl" name="webhookUrl" required>
+        
+        <div id="customFields"></div>
+        
+        <button type="button" id="addField">Agregar campo personalizado</button>
+        <button type="submit">Enviar datos</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('webhookForm');
+        const customFields = document.getElementById('customFields');
+        const addFieldButton = document.getElementById('addField');
+
+        addFieldButton.addEventListener('click', () => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.innerHTML = `
+                <label for="key_${customFields.children.length}">Nombre del campo:</label>
+                <input type="text" id="key_${customFields.children.length}" required>
+                <label for="value_${customFields.children.length}">Valor del campo:</label>
+                <input type="text" id="value_${customFields.children.length}" required>
+            `;
+            customFields.appendChild(fieldDiv);
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const data = {};
+
+            for (let i = 0; i < customFields.children.length; i++) {
+                const key = document.getElementById(`key_${i}`).value;
+                const value = document.getElementById(`value_${i}`).value;
+                data[key] = value;
+            }
+            
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Datos enviados con éxito');
+                console.log('Respuesta:', data);
+            })
+            .catch((error) => {
+                alert('Error al enviar los datos');
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
