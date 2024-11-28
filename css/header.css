@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(117, 117, 117);
+    background-color: rgb(184, 184, 184);
 }
 
 header {
@@ -10,18 +10,22 @@ header {
 }
 
 .header {
-    width: 70%;
+    width: 80%;
     height: 60px;
-    background-color: aliceblue;
+    background-color: rgb(86, 95, 57);
     display: flex;
     justify-content: space-around;
     border-radius: 15px;
 }
 
+.logo {
+    padding-top: 2.5px;
+}
+
 .logo a {
     display: block;
     position: absolute;
-    height: 57.5px;
+    height: 55px;
     width: 55px;
     border-radius: 50%;
     z-index: 1;
@@ -29,13 +33,13 @@ header {
 }
 
 .logo a:hover {
-    background-color: rgba(185, 185, 185, 0.503);
+    background-color: rgba(136, 163, 135, 0.503);
 }
 
 .logo img {
     width: 55px;
+    height: 55px;
     border-radius: 50%;
-    padding-top: 2.5px;
     z-index: 2;
 }
 
@@ -46,15 +50,15 @@ nav {
 
 nav a {
     text-decoration: none;
-    color: black;
+    color: rgb(233, 233, 233);
     font-family: Font;
     font-size: 20px;
-    padding-right: 20px;
+    padding-right: 40px;
     transition: 0.2s;
 }
 
 nav a:hover {
-    color: rgb(185, 185, 185);
+    color: rgb(105, 131, 104);
 }
 
 @font-face {
@@ -72,13 +76,12 @@ nav a:hover {
     .header a {
         font-size: 4vmin;
     }
+    nav a {
+        padding-right: 2vmax;
+    }
 }
 
 @media only screen and (max-width: 260px) {
-    .logo img {
-        width: 15vmin;
-    }
-
     .logo a {
         width: 15vmin;
         height: 15vmin;
