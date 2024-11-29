@@ -19,6 +19,11 @@ section {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: 0.1s;
+}
+
+.photoAndShortAbout:hover {
+    transform: scale(101%);
 }
 
 .photoAndShortAbout img {
@@ -42,6 +47,11 @@ section {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: 0.1s;
+}
+
+.about:hover {
+    transform: scale(101%);
 }
 
 .about p {
