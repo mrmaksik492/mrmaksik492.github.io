@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Apuestas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .nav-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            z-index: 1000;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        h1 {
+            color: #1e3c72;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        .info-display {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .money-display {
+            font-size: 1.2rem;
+            color: #2a5298;
+            margin-bottom: 0.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2a5298;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .win {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .lose {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .number-input {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .number-btn {
+            padding: 0.8rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="../.." class="nav-link">Inicio</a>
+    <div class="container">
+        <div id="initialSection" class="game-section active">
+            <h1>Juego de Apuestas</h1>
+            <div class="info-display">
+                <p>Ingresa la cantidad con la que quieres jugar</p>
+            </div>
+            <input type="number" id="initialMoney" placeholder="Cantidad inicial" min="1">
+            <button onclick="startGame()">Comenzar Juego</button>
+        </div>
+
+        <div id="gameSection" class="game-section">
+            <h1>Adivina el Número</h1>
+            <div class="info-display">
+                <p class="money-display">Dinero disponible: $<span id="currentMoney">0</span></p>
+                <p class="money-display">Total gastado: $<span id="totalSpent">0</span></p>
+            </div>
+            <input type="number" id="betAmount" placeholder="Cantidad a apostar" min="1">
+            <div class="number-input">
+                <button class="number-btn" onclick="selectNumber(0)">0</button>
+                <button class="number-btn" onclick="selectNumber(1)">1</button>
+                <button class="number-btn" onclick="selectNumber(2)">2</button>
+                <button class="number-btn" onclick="selectNumber(3)">3</button>
+                <button class="number-btn" onclick="selectNumber(4)">4</button>
+                <button class="number-btn" onclick="selectNumber(5)">5</button>
+                <button class="number-btn" onclick="selectNumber(6)">6</button>
+                <button class="number-btn" onclick="selectNumber(7)">7</button>
+                <button class="number-btn" onclick="selectNumber(8)">8</button>
+                <button class="number-btn" onclick="selectNumber(9)">9</button>
+            </div>
+            <div id="result" class="result"></div>
+            <button id="playAgainBtn" onclick="playAgain()" style="display: none;">Jugar de nuevo</button>
+            <button id="newGameBtn" onclick="resetGame()" style="display: none;">Nuevo juego</button>
+        </div>
+    </div>
+
+    <script>
+        let currentMoney = 0;
+        let totalSpent = 0;
+        let selectedNumber = null;
+
+        function updateMoneyDisplay() {
+            document.getElementById('currentMoney').textContent = currentMoney.toFixed(2);
+            document.getElementById('totalSpent').textContent = totalSpent.toFixed(2);
+        }
+
+        function startGame() {
+            const initialMoney = parseFloat(document.getElementById('initialMoney').value);
+            if (isNaN(initialMoney) || initialMoney < 1) {
+                alert('Por favor, ingresa una cantidad válida mayor a 0');
+                return;
+            }
+
+            currentMoney = initialMoney;
+            totalSpent += initialMoney;
+            updateMoneyDisplay();
+
+            document.getElementById('initialSection').classList.remove('active');
+            document.getElementById('gameSection').classList.add('active');
+        }
+
+        function selectNumber(num) {
+            const betAmount = parseFloat(document.getElementById('betAmount').value);
+            if (isNaN(betAmount) || betAmount < 1 || betAmount > currentMoney) {
+                alert('Por favor, ingresa una apuesta válida');
+                return;
+            }
+
+            const randomNumber = Math.floor(Math.random() * 10);
+            const resultDiv = document.getElementById('result');
+            
+            if (num === randomNumber) {
+                currentMoney += betAmount;
+                resultDiv.innerHTML = `
+                    ¡Has ganado! <br>
+                    Tu número: ${num} <br>
+                    Número ganador: ${randomNumber}
+                `;
+                resultDiv.className = 'result win';
+            } else {
+                currentMoney -= betAmount;
+                resultDiv.innerHTML = `
+                    Has perdido <br>
+                    Tu número: ${num} <br>
+                    Número ganador: ${randomNumber}
+                `;
+                resultDiv.className = 'result lose';
+            }
+
+            updateMoneyDisplay();
+
+            if (currentMoney <= 0) {
+                document.getElementById('playAgainBtn').style.display = 'none';
+                document.getElementById('newGameBtn').style.display = 'block';
+                disableGameButtons(true);
+            } else {
+                document.getElementById('playAgainBtn').style.display = 'block';
+                document.getElementById('newGameBtn').style.display = 'block';
+                disableGameButtons(true);
+            }
+        }
+
+        function disableGameButtons(disabled) {
+            const buttons = document.querySelectorAll('.number-btn');
+            buttons.forEach(btn => btn.disabled = disabled);
+            document.getElementById('betAmount').disabled = disabled;
+        }
+
+        function playAgain() {
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('result').className = 'result';
+            document.getElementById('playAgainBtn').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'none';
+            document.getElementById('betAmount').value = '';
+            disableGameButtons(false);
+        }
+
+        function resetGame() {
+            document.getElementById('initialMoney').value = '';
+            document.getElementById('betAmount').value = '';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('result').className = 'result';
+            document.getElementById('gameSection').classList.remove('active');
+            document.getElementById('initialSection').classList.add('active');
+            document.getElementById('playAgainBtn').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'none';
+            disableGameButtons(false);
+            currentMoney = 0;
+            selectedNumber = null;
+        }
+    </script>
+</body>
+</html>
