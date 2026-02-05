@@ -1,13 +1,13 @@
-section {
-    margin-top: 50px;
-}
-
 .myInfo {
     display: flex;
     justify-content: center;
     align-items: center;
     color: rgb(255, 255, 255);
     
+}
+
+section {
+    height: 1000px;
 }
 
 .photoAndShortAbout {

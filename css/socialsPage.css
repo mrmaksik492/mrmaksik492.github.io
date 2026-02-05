@@ -5,10 +5,6 @@
     font-size: 50px;
 }
 
-section {
-    margin-top: 50px;
-}
-
 .mySocials {
     display: flex;
     justify-content: center;
