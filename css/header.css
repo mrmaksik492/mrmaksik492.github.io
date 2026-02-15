@@ -57,7 +57,7 @@ section {
 }
 
 nav {
-    padding-top: 18px;
+    margin-top: 18px;
     height: 40px;
 }
 
@@ -90,7 +90,7 @@ nav a:hover {
         font-size: 4vmin;
     }
     nav a {
-        padding-right: 2vmax;
+        margin-right: 2vmax;
         width: fit-content;
     }
 }
